@@ -13,15 +13,18 @@ class App extends Component {
     values: [50],
     upload: null,
     uploadInput: null,
+    backend: '',
   };
 
   componentDidMount() {
+    console.log(window.location.origin.replace('3000', '3001'));
+    this.setState({ backend: window.location.origin.replace('3000', '3001') });
     this.fetchData();
   }
 
   fetchData = () => {
     this.clearUpload();
-    fetch('http://localhost:3001/api/data')
+    fetch('/api/data')
       .then(data => data.json())
       .then(res => this.setState({
         files: res.files,
@@ -42,7 +45,7 @@ class App extends Component {
   handleFormat = (eventKey, event) => {
     event.preventDefault();
     const body = { index: eventKey };
-    fetch('http://localhost:3001/api/format', {
+    fetch('/api/format', {
       method: 'POST',
       body: JSON.stringify(body),
       headers: {
@@ -64,7 +67,7 @@ class App extends Component {
       }
     }
     this.setState({ files: {} });
-    fetch('http://localhost:3001/api/rename', {
+    fetch('/api/rename', {
       method: 'POST',
       body: JSON.stringify(filtered),
       headers: {
@@ -80,7 +83,7 @@ class App extends Component {
   handleChangeDir = (eventKey, event) => {
     event.preventDefault();
     const body = { dir: eventKey };
-    fetch('http://localhost:3001/api/cwd', {
+    fetch('/api/cwd', {
       method: 'POST',
       body: JSON.stringify(body),
       headers: {
@@ -95,7 +98,7 @@ class App extends Component {
 
   handleChangeDirRoot = (event) => {
     event.preventDefault();
-    fetch('http://localhost:3001/api/cwd', {
+    fetch('/api/cwd', {
       method: 'DELETE',
       body: '{}',
       headers: {
@@ -128,7 +131,7 @@ class App extends Component {
 
   handleZip = (key) => {
     const body = { file: key };
-    fetch('http://localhost:3001/api/zip', {
+    fetch('/api/zip', {
       method: 'POST',
       body: JSON.stringify(body),
       headers: {
@@ -143,7 +146,7 @@ class App extends Component {
 
   handleUnzip = (key) => {
     const body = { file: key };
-    fetch('http://localhost:3001/api/unzip', {
+    fetch('/api/unzip', {
       method: 'POST',
       body: JSON.stringify(body),
       headers: {
@@ -157,7 +160,7 @@ class App extends Component {
   }
 
   handleNewDirectory = () => {
-    fetch('http://localhost:3001/api/mkdir', {
+    fetch('/api/mkdir', {
       method: 'POST',
       body: '{}',
       headers: {
@@ -178,7 +181,7 @@ class App extends Component {
       filedata.append(file.name, file);
     });
 
-    fetch('http://localhost:3001/api/upload', {
+    fetch('/api/upload', {
       method: 'POST',
       body: filedata,
       headers: {
@@ -308,7 +311,7 @@ class App extends Component {
   }
 
   render() {
-    const { files, currentDir, dirs, upload } = this.state;
+    const { files, currentDir, dirs, upload, backend } = this.state;
     const flexStyle = {
       display: "flex",
       flexWrap: "wrap"
@@ -391,7 +394,7 @@ class App extends Component {
                   <Form.Control id={key} style={this.getFilenameStyle(key, files)} plaintext value={files[key] ? files[key] : key} onChange={this.handleChange}/>
                 </Col>
                 <Col sm="2">
-                  <Button variant="success" disabled={dirs.includes(key)} href={"http://localhost:3001/api/download/" + key}>
+                  <Button variant="success" disabled={dirs.includes(key)} href={backend + "/api/download/" + key}>
                     v
                   </Button>
                   <Button variant="primary" disabled={key.endsWith(".zip")} onClick={() => this.handleZip(key)}>

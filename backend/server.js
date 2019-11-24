@@ -10,7 +10,7 @@ const extract = require('extract-zip')
 
 const soundFileExtension = '.wav';
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-const rootDir = '/home/pi/samples';
+const rootDir = '/home/pi/sounds';
 const newDirName = 'newdir';
 const API_PORT = 3001;
 const app = express();

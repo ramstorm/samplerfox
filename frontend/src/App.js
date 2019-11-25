@@ -17,7 +17,6 @@ class App extends Component {
   };
 
   componentDidMount() {
-    console.log(window.location.origin.replace('3000', '3001'));
     this.setState({ backend: window.location.origin.replace('3000', '3001') });
     this.fetchData();
   }

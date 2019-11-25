@@ -169,11 +169,19 @@ router.post('/mkdir', (req, res) => {
 });
 
 router.post('/lock', (req, res) => {
-  proc.execFile('sudo', ['ls', '-la'], (error, stdout, stderr) => {
+  proc.exec('sudo mount -o remount,ro / ; sudo mount -o remount,ro /boot', (error, stdout, stderr) => {
     if (error) {
-      throw error;
+      res.status(500).json({ error: error });
     }
-    //console.log(stdout);
+    res.json({ success: true });
+  });
+});
+
+router.post('/unlock', (req, res) => {
+  proc.exec('sudo mount -o remount,rw / ; sudo mount -o remount,rw /boot', (error, stdout, stderr) => {
+    if (error) {
+      res.status(500).json({ error: error });
+    }
     res.json({ success: true });
   });
 });

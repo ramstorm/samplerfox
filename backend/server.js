@@ -5,7 +5,8 @@ const fileUpload = require('express-fileupload');
 const path = require('path');
 const fs = require('fs');
 const archiver = require('archiver');
-const extract = require('extract-zip')
+const extract = require('extract-zip');
+const proc = require('child_process');
 //const logger = require('morgan');
 
 const soundFileExtension = '.wav';
@@ -165,6 +166,16 @@ router.post('/mkdir', (req, res) => {
     }
   });
   res.json({ success: true });
+});
+
+router.post('/lock', (req, res) => {
+  proc.execFile('sudo', ['ls', '-la'], (error, stdout, stderr) => {
+    if (error) {
+      throw error;
+    }
+    //console.log(stdout);
+    res.json({ success: true });
+  });
 });
 
 router.get('/kill', (req, res) => {

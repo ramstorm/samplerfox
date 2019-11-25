@@ -194,6 +194,35 @@ class App extends Component {
     this.clearUpload();
   }
 
+  handleLock = (event) => {
+    event.preventDefault();
+    fetch('/api/lock', {
+      method: 'POST',
+      body: '{}',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(data => data.json())
+    .then(res => {
+      this.fetchData();
+    });
+  }
+
+  handleUnlock = (event) => {
+    event.preventDefault();
+    fetch('/api/unlock', {
+      method: 'POST',
+      body: '{}',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(data => data.json())
+    .then(res => {
+      this.fetchData();
+    });
+  }
   clearUpload = () => {
     const { uploadInput } = this.state;
     if (uploadInput !== null) {
@@ -319,7 +348,16 @@ class App extends Component {
     return (
       <div>
         <h1>SamplerFox</h1>
-        <h4>Navigation</h4>
+        <h4>File system</h4>
+        <div style={flexStyle}>
+          <Button variant="danger" onClick={this.handleLock}>
+            Lock
+          </Button>
+          <Button variant="success" onClick={this.handleUnlock}>
+            Unlock
+          </Button>
+        </div>
+        <h4 style={{paddingTop: "12px"}}>Navigation</h4>
         <div style={flexStyle}>
           <Button variant="secondary" onClick={this.handleChangeDirRoot}>
             Home

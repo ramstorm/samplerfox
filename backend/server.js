@@ -7,16 +7,19 @@ const fs = require('fs');
 const archiver = require('archiver');
 const extract = require('extract-zip');
 const proc = require('child_process');
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 //const logger = require('morgan');
 
-const soundFileExtension = '.wav';
-const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-const rootDir = '/home/pi/sounds';
-const newDirName = 'newdir';
+const ROOT_DIR = '/home/pi/sounds';
+const NEW_DIR_NAME = 'newdir';
+const SOUND_FILE_EXTENSION = '.wav';
+const START_CMD = 'sudo /home/pi/startm.sh > /dev/null 2>&1 &';
+const STOP_CMD = 'ps aux | grep -v grep | grep \'startm\\|samplerbox\' | awk \'{ print $2 }\' | xargs sudo kill ; sudo aconnect -x';
 const API_PORT = 3001;
+
 const app = express();
 const router = express.Router();
-let currentDir = rootDir;
+let currentDir = ROOT_DIR;
 
 app.use(cors());
 app.use(fileUpload());
@@ -78,7 +81,7 @@ router.post('/cwd', (req, res) => {
 });
 
 router.delete('/cwd', (req, res) => {
-  currentDir = rootDir;
+  currentDir = ROOT_DIR;
   res.json({ success: true });
 });
 
@@ -102,7 +105,7 @@ router.post('/fix', (req, res) => {
   let i = Number(req.body.index);
   files.forEach(file => {
     let extension = path.extname(file);
-    if (extension.toLowerCase() != soundFileExtension) {
+    if (extension.toLowerCase() != SOUND_FILE_EXTENSION) {
       return;
     }
     let name = path.basename(file, extension);
@@ -174,7 +177,7 @@ router.get('/download/:filename', (req, res) => {
 });
 
 router.post('/mkdir', (req, res) => {
-  fs.mkdirSync(path.join(currentDir, newDirName), { recursive: false }, err => {
+  fs.mkdirSync(path.join(currentDir, NEW_DIR_NAME), { recursive: false }, err => {
     if (err) {
       res.status(500).json({ error: err });
     }
@@ -191,11 +194,17 @@ router.post('/unlock', (req, res) => {
 });
 
 router.post('/start', (req, res) => {
-  execute('sudo /home/pi/startm.sh > /dev/null 2>&1 &', res);
+  execute(START_CMD, res);
 });
 
 router.post('/stop', (req, res) => {
-  execute('ps aux | grep -v grep | grep \'startm\\|samplerbox\' | awk \'{ print $2 }\' | xargs sudo kill ; sudo aconnect -x', res);
+  execute(STOP_CMD, res);
+});
+
+router.post('/restart', (req, res) => {
+  proc.execSync(STOP_CMD);
+  proc.execSync(START_CMD);
+  res.json({ success: true });
 });
 
 router.post('/exit', (req, res) => {

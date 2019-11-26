@@ -240,7 +240,7 @@ class App extends Component {
     })
     .then(data => data.json())
     .then(res => {
-      if (eventKey === 'start') {
+      if (eventKey === 'start' || eventKey === 'restart') {
         this.setState({ sampler: 'on' });
       }
       else {
@@ -427,10 +427,11 @@ class App extends Component {
                 System
               </Dropdown.Toggle>
               <Dropdown.Menu>
-                <Dropdown.Item hidden={sampler === 'on'} eventKey="start">Start sampler</Dropdown.Item>
-                <Dropdown.Item hidden={sampler === 'off'} eventKey="stop">Stop sampler</Dropdown.Item>
                 <Dropdown.Item hidden={fileSystem === 'ro'} eventKey="lock">Lock filesystem (ro)</Dropdown.Item>
                 <Dropdown.Item hidden={fileSystem === 'rw'} eventKey="unlock">Unlock filesystem (rw)</Dropdown.Item>
+                <Dropdown.Item hidden={sampler === 'on'} eventKey="start">Start sampler</Dropdown.Item>
+                <Dropdown.Item hidden={sampler === 'off'} eventKey="stop">Stop sampler</Dropdown.Item>
+                <Dropdown.Item hidden={sampler === 'off'} eventKey="restart">Restart sampler</Dropdown.Item>
                 <Dropdown.Divider />
                 <Dropdown.Item eventKey="exit">Exit</Dropdown.Item>
                 <Dropdown.Item eventKey="reboot">Reboot</Dropdown.Item>

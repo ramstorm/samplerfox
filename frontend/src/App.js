@@ -365,7 +365,7 @@ class App extends Component {
         <p style={{ fontStyle: "italic" }}>Sampler: {sampler}, Filesystem: {fileSystem}, Free space: {freeSpace}</p>
         <Form onSubmit={this.handleUpload}>
           <div style={flexStyle}>
-            <Button style={{width: "75px"}} variant="secondary" onClick={this.handleChangeDirRoot}>
+            <Button style={{width: "80px"}} variant="secondary" onClick={this.handleChangeDirRoot}>
               Home
             </Button>
             <Dropdown onSelect={this.handleChangeDir}>
@@ -383,7 +383,7 @@ class App extends Component {
             <Button style={{width: "60px"}} variant="warning" disabled={Object.keys(files).includes('newdir')} onClick={this.handleNewDirectory}>
               Dir+
             </Button>
-            <Button style={{width: "75px"}} variant="primary" type="submit" disabled={upload === null}>Upload</Button>
+            <Button style={{width: "80px"}} variant="primary" type="submit" disabled={upload === null}>Upload</Button>
             <Button variant="light" onClick={this.toggleUpload}>{hideUpload ? ">" : "<"}</Button>
           </div>
           <Form.Group hidden={hideUpload}>
@@ -392,16 +392,20 @@ class App extends Component {
         </Form>
         <Form onSubmit={this.handleSubmit}>
           <div style={flexStyle}>
-            <Button style={{width: "75px"}} variant="secondary" onClick={this.handleCancel}>
+            <Button style={{width: "80px"}} variant="secondary" onClick={this.handleCancel}>
               Cancel
             </Button>
             <Dropdown onSelect={this.handleSystem}>
-              <Dropdown.Toggle style={{width: "100px"}} variant="info" id="dropdown-basic">
+              <Dropdown.Toggle style={{width: "100px"}} variant="dark" id="dropdown-basic">
                 System
               </Dropdown.Toggle>
               <Dropdown.Menu>
-                <Dropdown.Item eventKey="lock">Lock filesystem (ro)</Dropdown.Item>
-                <Dropdown.Item eventKey="unlock">Unlock filesystem (rw)</Dropdown.Item>
+                <Dropdown.Item hidden={sampler === 'on'} eventKey="start">Start sampler</Dropdown.Item>
+                <Dropdown.Item hidden={sampler === 'off'} eventKey="stop">Stop sampler</Dropdown.Item>
+                <Dropdown.Item hidden={fileSystem === 'ro'} eventKey="lock">Lock filesystem (ro)</Dropdown.Item>
+                <Dropdown.Item hidden={fileSystem === 'rw'} eventKey="unlock">Unlock filesystem (rw)</Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item eventKey="logout">Logout (turn off web and WiFi)</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
             <Dropdown onSelect={this.handleFix}>
@@ -413,7 +417,7 @@ class App extends Component {
                 <Dropdown.Item eventKey="2">2</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
-            <Button style={{width: "50px"}} variant="primary" type="submit">
+            <Button style={{width: "55px"}} variant="primary" type="submit">
               OK
             </Button>
             <Button variant="light" onClick={this.toggleEdit}>{hideEdit ? ">" : "<"}</Button>

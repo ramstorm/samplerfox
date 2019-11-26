@@ -49,6 +49,15 @@ remove = (file) => {
   }
 }
 
+execute = (command, res) => {
+  proc.exec(command, (error, stdout, stderr) => {
+    if (error) {
+      res.status(500).json({ error: error });
+    }
+    res.json({ success: true });
+  });
+}
+
 router.get('/data', (req, res) => {
   let files = {};
   list().forEach(file => {
@@ -169,21 +178,23 @@ router.post('/mkdir', (req, res) => {
 });
 
 router.post('/lock', (req, res) => {
-  proc.exec('sudo mount -o remount,ro / ; sudo mount -o remount,ro /boot', (error, stdout, stderr) => {
-    if (error) {
-      res.status(500).json({ error: error });
-    }
-    res.json({ success: true });
-  });
+  execute('sudo mount -o remount,ro / ; sudo mount -o remount,ro /boot', res);
 });
 
 router.post('/unlock', (req, res) => {
-  proc.exec('sudo mount -o remount,rw / ; sudo mount -o remount,rw /boot', (error, stdout, stderr) => {
-    if (error) {
-      res.status(500).json({ error: error });
-    }
-    res.json({ success: true });
-  });
+  execute('sudo mount -o remount,rw / ; sudo mount -o remount,rw /boot', res);
+});
+
+router.post('/start', (req, res) => {
+  execute('/home/pi/startm.sh &', res);
+});
+
+router.post('/stop', (req, res) => {
+  execute('ps aux | grep -v grep | grep \'startm\\|samplerbox\' | awk \'{ print $2 }\' | xargs sudo kill ; aconnect -x', res);
+});
+
+router.post('/logout', (req, res) => {
+  process.exit(0);
 });
 
 router.get('/system', (req, res) => {

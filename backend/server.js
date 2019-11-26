@@ -190,7 +190,7 @@ router.post('/unlock', (req, res) => {
 });
 
 router.post('/start', (req, res) => {
-  execute('sudo /home/pi/startm.sh &', res);
+  execute('sudo /home/pi/startm.sh > /dev/null 2>&1 &', res);
 });
 
 router.post('/stop', (req, res) => {

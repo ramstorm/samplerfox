@@ -187,8 +187,15 @@ router.post('/unlock', (req, res) => {
 });
 
 router.get('/system', (req, res) => {
-  const mount = proc.execSync('mount | grep "/dev/.* on / " | sed "s/.*\\(r[w|o]\\).*/\\1/g"');
-  res.json({ success: true, data: mount.toString().trim() });
+  const ps = proc.execSync('ps aux | grep -v grep | grep samplerbox || true');
+  const fs = proc.execSync('mount | grep "/dev/.* on / " | sed "s/.*\\(r[w|o]\\).*/\\1/g"');
+  const df = proc.execSync('df -h | grep "/dev/root" | awk \'{ print $4 }\'');
+  res.json({
+    success: true,
+    fileSystem: fs.toString().trim(),
+    freeSpace: df.toString(),
+    sampler: ps.toString().trim() ? 'on' : 'off'
+  });
 });
 
 router.get('/kill', (req, res) => {

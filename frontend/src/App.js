@@ -11,14 +11,19 @@ class App extends Component {
     currentDir: '',
     dirs: [],
     values: [50],
+    hideUpload: true,
     upload: null,
     uploadInput: null,
     backend: '',
+    sampler: 'off',
+    fileSystem: 'ro',
+    freeSpace: 'N/A',
   };
 
   componentDidMount() {
     this.setState({ backend: window.location.origin.replace('3000', '3001') });
     this.fetchData();
+    this.fetchSystemInfo();
   }
 
   fetchData = () => {
@@ -32,6 +37,15 @@ class App extends Component {
       }));
   }
 
+  fetchSystemInfo = () => {
+    fetch('/api/system')
+      .then(data => data.json())
+      .then(res => this.setState({
+        sampler: res.sampler,
+        fileSystem: res.fileSystem,
+        freeSpace: res.freeSpace
+      }));
+  }
   handleChange = (event) => {
     const newState = update(this.state, {
       files: {
@@ -41,7 +55,7 @@ class App extends Component {
     this.setState(newState);
   }
 
-  handleFormat = (eventKey, event) => {
+  handleFix = (eventKey, event) => {
     event.preventDefault();
     const body = { index: eventKey };
     fetch('/api/format', {
@@ -194,9 +208,9 @@ class App extends Component {
     this.clearUpload();
   }
 
-  handleLock = (event) => {
+  handleSystem = (eventKey, event) => {
     event.preventDefault();
-    fetch('/api/lock', {
+    fetch('/api/' + eventKey, {
       method: 'POST',
       body: '{}',
       headers: {
@@ -205,24 +219,15 @@ class App extends Component {
     })
     .then(data => data.json())
     .then(res => {
-      this.fetchData();
+      this.fetchSystemInfo();
     });
   }
 
-  handleUnlock = (event) => {
-    event.preventDefault();
-    fetch('/api/unlock', {
-      method: 'POST',
-      body: '{}',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-    .then(data => data.json())
-    .then(res => {
-      this.fetchData();
-    });
+  toggleUpload = () => {
+    const { hideUpload } = this.state;
+    this.setState({ hideUpload: !hideUpload });
   }
+
   clearUpload = () => {
     const { uploadInput } = this.state;
     if (uploadInput !== null) {
@@ -339,7 +344,9 @@ class App extends Component {
   }
 
   render() {
-    const { files, currentDir, dirs, upload, backend } = this.state;
+    const {
+      files, currentDir, dirs, hideUpload, upload, backend, fileSystem, freeSpace, sampler
+    } = this.state;
     const flexStyle = {
       display: "flex",
       flexWrap: "wrap"
@@ -348,64 +355,62 @@ class App extends Component {
     return (
       <div>
         <h1>SamplerFox</h1>
-        <h4>File system</h4>
-        <div style={flexStyle}>
-          <Button variant="danger" onClick={this.handleLock}>
-            Lock
-          </Button>
-          <Button variant="success" onClick={this.handleUnlock}>
-            Unlock
-          </Button>
-        </div>
-        <h4 style={{paddingTop: "12px"}}>Navigation</h4>
-        <div style={flexStyle}>
-          <Button variant="secondary" onClick={this.handleChangeDirRoot}>
-            Home
-          </Button>
-          <Dropdown onSelect={this.handleChangeDir}>
-            <Dropdown.Toggle variant="warning" id="dropdown-basic">
-              {currentDir}
-            </Dropdown.Toggle>
-            <Dropdown.Menu>
-              {dirs.length === 0 ?
-                 <Dropdown.Item key="none" disabled="true">None</Dropdown.Item>
-               : dirs.map(dir =>
-                 <Dropdown.Item key={dir} eventKey={dir}>{dir}</Dropdown.Item>
-               )}
-            </Dropdown.Menu>
-          </Dropdown>
-        </div>
-        <h4 style={{paddingTop: "12px"}}>Upload Files</h4>
+        <p style={{ fontStyle: "italic" }}>Sampler: {sampler}, Filesystem: {fileSystem}, Free space: {freeSpace}</p>
         <Form onSubmit={this.handleUpload}>
-        <div style={flexStyle}>
-          <Button style={{height: "38px"}} variant="primary" type="submit" disabled={upload === null}>Upload</Button>
-          <Form.Group>
-            <Form.Control style={{paddingLeft: "2px", paddingTop: "4px"}} id="fileUpload" type="file" multiple onChange={this.addFiles}/>
+          <div style={flexStyle}>
+            <Button style={{width: "75px"}} variant="secondary" onClick={this.handleChangeDirRoot}>
+              Home
+            </Button>
+            <Dropdown onSelect={this.handleChangeDir}>
+              <Dropdown.Toggle style={{width: "75px"}} variant="warning" id="dropdown-basic">
+                Dirs
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {dirs.length === 0 ?
+                   <Dropdown.Item key="none" disabled="true">None</Dropdown.Item>
+                 : dirs.map(dir =>
+                   <Dropdown.Item key={dir} eventKey={dir}>{dir}</Dropdown.Item>
+                 )}
+              </Dropdown.Menu>
+            </Dropdown>
+            <Button style={{width: "60px"}} variant="warning" disabled={Object.keys(files).includes('newdir')} onClick={this.handleNewDirectory}>
+              Dir+
+            </Button>
+            <Button style={{width: "75px"}} variant="primary" type="submit" disabled={upload === null}>Upload</Button>
+            <Button variant="light" onClick={this.toggleUpload}>{hideUpload ? ">" : "<"}</Button>
+          </div>
+          <Form.Group hidden={hideUpload}>
+            <Form.Control style={{paddingTop: "12px"}} id="fileUpload" type="file" multiple onChange={this.addFiles}/>
           </Form.Group>
-        </div>
         </Form>
-        <h4>File List</h4>
         <Form onSubmit={this.handleSubmit}>
           <div style={flexStyle}>
-            <Button variant="secondary" onClick={this.handleCancel}>
+            <Button style={{width: "75px"}} variant="secondary" onClick={this.handleCancel}>
               Cancel
             </Button>
-            <Button variant="warning" disabled={Object.keys(files).includes('newdir')} onClick={this.handleNewDirectory}>
-              New Directory
-            </Button>
-            <Dropdown onSelect={this.handleFormat}>
-              <Dropdown.Toggle variant="info" id="dropdown-basic">
-                Format
+            <Dropdown onSelect={this.handleSystem}>
+              <Dropdown.Toggle style={{width: "100px"}} variant="info" id="dropdown-basic">
+                System
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                <Dropdown.Item eventKey="lock">Lock filesystem (ro)</Dropdown.Item>
+                <Dropdown.Item eventKey="unlock">Unlock filesystem (rw)</Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+            <Dropdown onSelect={this.handleFix}>
+              <Dropdown.Toggle style={{width: "60px"}} variant="info" id="dropdown-basic">
+                Fix
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 <Dropdown.Item eventKey="0">0</Dropdown.Item>
                 <Dropdown.Item eventKey="2">2</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
-            <Button variant="primary" type="submit">
-              Submit
+            <Button style={{width: "50px"}} variant="primary" type="submit">
+              OK
             </Button>
           </div>
+          <h4 style={{paddingTop: "12px"}}>{currentDir}</h4>
           {Object.keys(files).map(key => 
             <Container key={key} fluid={true}>
               <Form.Group as={Row} key={key}>
@@ -431,16 +436,16 @@ class App extends Component {
                   <Form.Control id={key} style={this.getFilenameStyle(key, files)} plaintext value={files[key] ? files[key] : key} onChange={this.handleChange}/>
                 </Col>
                 <Col sm="2">
-                  <Button variant="success" disabled={dirs.includes(key)} href={backend + "/api/download/" + key}>
+                  <Button variant="outline-dark" disabled={dirs.includes(key)} href={backend + "/api/download/" + key}>
                     v
                   </Button>
-                  <Button variant="primary" disabled={key.endsWith(".zip")} onClick={() => this.handleZip(key)}>
+                  <Button variant="outline-info" disabled={key.endsWith(".zip")} onClick={() => this.handleZip(key)}>
                     z
                   </Button>
-                  <Button variant="secondary" disabled={!key.endsWith(".zip") || Object.keys(files).includes(key.replace(/\.zip$/, ""))} onClick={() => this.handleUnzip(key)}>
+                  <Button variant="outline-secondary" disabled={!key.endsWith(".zip") || Object.keys(files).includes(key.replace(/\.zip$/, ""))} onClick={() => this.handleUnzip(key)}>
                     u
                   </Button>
-                  <Button variant="danger" disabled={files[key].startsWith("---")} onClick={() => this.handleDelete(key)}>
+                  <Button variant="outline-danger" disabled={files[key].startsWith("---")} onClick={() => this.handleDelete(key)}>
                     -
                   </Button>
                 </Col>

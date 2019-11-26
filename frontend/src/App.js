@@ -10,15 +10,16 @@ class App extends Component {
     message: null,
     currentDir: '',
     dirs: [],
-    values: [50],
+    values: [],
     hideEdit: true,
     hideUpload: true,
     upload: null,
     uploadInput: null,
     backend: '',
-    sampler: 'off',
-    fileSystem: 'ro',
-    freeSpace: 'N/A',
+    loading: false,
+    sampler: '',
+    fileSystem: '',
+    freeSpace: '',
   };
 
   componentDidMount() {
@@ -58,6 +59,7 @@ class App extends Component {
 
   handleFix = (eventKey, event) => {
     event.preventDefault();
+    this.setState({ loading: true });
     const body = { index: eventKey };
     fetch('/api/format', {
       method: 'POST',
@@ -69,11 +71,13 @@ class App extends Component {
     .then(data => data.json())
     .then(res => {
       this.fetchData();
+      this.setState({ loading: false });
     });
   }
 
   handleSubmit = (event) => {
     event.preventDefault();
+    this.setState({ loading: true });
     let filtered = {};
     for (let [key, value] of Object.entries(this.state.files)) {
       if (value) {
@@ -91,11 +95,13 @@ class App extends Component {
     .then(data => data.json())
     .then(res => {
       this.fetchData();
+      this.setState({ loading: false });
     });
   }
 
   handleChangeDir = (eventKey, event) => {
     event.preventDefault();
+    this.setState({ loading: true });
     const body = { dir: eventKey };
     fetch('/api/cwd', {
       method: 'POST',
@@ -107,11 +113,13 @@ class App extends Component {
     .then(data => data.json())
     .then(res => {
       this.fetchData();
+      this.setState({ loading: false });
     });
   }
 
   handleChangeDirRoot = (event) => {
     event.preventDefault();
+    this.setState({ loading: true });
     fetch('/api/cwd', {
       method: 'DELETE',
       body: '{}',
@@ -122,13 +130,16 @@ class App extends Component {
     .then(data => data.json())
     .then(res => {
       this.fetchData();
+      this.setState({ loading: false });
     });
   }
 
   handleCancel = (event) => {
     event.preventDefault();
+    this.setState({ loading: true });
     this.setState({ files: {} });
     this.fetchData();
+    this.setState({ loading: false });
   }
 
   handleDelete = (key) => {
@@ -144,6 +155,7 @@ class App extends Component {
   }
 
   handleZip = (key) => {
+    this.setState({ loading: true });
     const body = { file: key };
     fetch('/api/zip', {
       method: 'POST',
@@ -155,10 +167,12 @@ class App extends Component {
     .then(data => data.json())
     .then(res => {
       this.fetchData();
+      this.setState({ loading: false });
     });
   }
 
   handleUnzip = (key) => {
+    this.setState({ loading: true });
     const body = { file: key };
     fetch('/api/unzip', {
       method: 'POST',
@@ -170,10 +184,12 @@ class App extends Component {
     .then(data => data.json())
     .then(res => {
       this.fetchData();
+      this.setState({ loading: false });
     });
   }
 
   handleNewDirectory = () => {
+    this.setState({ loading: true });
     fetch('/api/mkdir', {
       method: 'POST',
       body: '{}',
@@ -184,11 +200,13 @@ class App extends Component {
     .then(data => data.json())
     .then(res => {
       this.fetchData();
+      this.setState({ loading: false });
     });
   }
 
   handleUpload = (event) => {
     event.preventDefault();
+    this.setState({ loading: true });
     const { upload } = this.state;
     const filedata = new FormData();
     upload.forEach(file => {
@@ -205,12 +223,14 @@ class App extends Component {
     .then(data => data.json())
     .then(res => {
       this.fetchData();
+      this.setState({ loading: false });
     });
     this.clearUpload();
   }
 
   handleSystem = (eventKey, event) => {
     event.preventDefault();
+    this.setState({ loading: true });
     fetch('/api/' + eventKey, {
       method: 'POST',
       body: '{}',
@@ -221,6 +241,7 @@ class App extends Component {
     .then(data => data.json())
     .then(res => {
       this.fetchSystemInfo();
+      this.setState({ loading: false });
     });
   }
 
@@ -352,8 +373,8 @@ class App extends Component {
 
   render() {
     const {
-      files, currentDir, dirs, hideEdit, hideUpload,
-      upload, backend, fileSystem, freeSpace, sampler
+      files, currentDir, dirs, hideEdit, hideUpload, upload,
+      backend, loading, fileSystem, freeSpace, sampler
     } = this.state;
     const flexStyle = {
       display: "flex",
@@ -363,7 +384,7 @@ class App extends Component {
     return (
       <div>
         <h1>SamplerFox</h1>
-        <p style={{ fontStyle: "italic" }}>Sampler: {sampler}, Filesystem: {fileSystem}, Free space: {freeSpace}</p>
+        <p style={{ fontStyle: "italic" }}>Sampler: {sampler}, Filesystem: {fileSystem}, Free space: {freeSpace}{loading ? ' ...' : ''}</p>
         <Form onSubmit={this.handleUpload}>
           <div style={flexStyle}>
             <Button style={{width: "80px"}} variant="secondary" onClick={this.handleChangeDirRoot}>

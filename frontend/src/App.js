@@ -253,7 +253,8 @@ class App extends Component {
     const volumeRegex = /_([0-9]+)(d[0-9]+.wav|.wav$)/;
     const matches = filename.match(volumeRegex);
     if (matches && matches.length === 3) {
-      return [Number(matches[1])];
+      const volume = Number(matches[1]);
+      return [Math.max(Math.min(volume, 100), 0)];
     }
     return [1];
   }
@@ -414,7 +415,7 @@ class App extends Component {
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 <Dropdown.Item eventKey="0">0</Dropdown.Item>
-                <Dropdown.Item eventKey="2">2</Dropdown.Item>
+                <Dropdown.Item eventKey="3">3</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
             <Button style={{width: "55px"}} variant="primary" type="submit">

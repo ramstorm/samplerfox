@@ -240,7 +240,12 @@ class App extends Component {
     })
     .then(data => data.json())
     .then(res => {
-      this.fetchSystemInfo();
+      if (eventKey === 'start') {
+        this.setState({ sampler: 'on' });
+      }
+      else {
+        this.fetchSystemInfo();
+      }
       this.setState({ loading: false });
     });
   }

@@ -11,6 +11,7 @@ class App extends Component {
     currentDir: '',
     dirs: [],
     values: [50],
+    hideEdit: true,
     hideUpload: true,
     upload: null,
     uploadInput: null,
@@ -228,6 +229,11 @@ class App extends Component {
     this.setState({ hideUpload: !hideUpload });
   }
 
+  toggleEdit = () => {
+    const { hideEdit } = this.state;
+    this.setState({ hideEdit: !hideEdit });
+  }
+
   clearUpload = () => {
     const { uploadInput } = this.state;
     if (uploadInput !== null) {
@@ -345,7 +351,8 @@ class App extends Component {
 
   render() {
     const {
-      files, currentDir, dirs, hideUpload, upload, backend, fileSystem, freeSpace, sampler
+      files, currentDir, dirs, hideEdit, hideUpload,
+      upload, backend, fileSystem, freeSpace, sampler
     } = this.state;
     const flexStyle = {
       display: "flex",
@@ -409,6 +416,7 @@ class App extends Component {
             <Button style={{width: "50px"}} variant="primary" type="submit">
               OK
             </Button>
+            <Button variant="light" onClick={this.toggleEdit}>{hideEdit ? ">" : "<"}</Button>
           </div>
           <h4 style={{paddingTop: "12px"}}>{currentDir}</h4>
           {Object.keys(files).map(key => 
@@ -435,7 +443,7 @@ class App extends Component {
                 <Col sm="6">
                   <Form.Control id={key} style={this.getFilenameStyle(key, files)} plaintext value={files[key] ? files[key] : key} onChange={this.handleChange}/>
                 </Col>
-                <Col sm="2">
+                <Col hidden={hideEdit} sm="2">
                   <Button variant="outline-dark" disabled={dirs.includes(key)} href={backend + "/api/download/" + key}>
                     v
                   </Button>

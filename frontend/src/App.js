@@ -23,7 +23,7 @@ class App extends Component {
   };
 
   componentDidMount() {
-    this.setState({ backend: window.location.origin.replace('3000', '3001') });
+    this.setState({ backend: window.location.origin.replace('3000', '3001') }); // For development server
     this.fetchData();
     this.fetchSystemInfo();
   }
@@ -61,7 +61,7 @@ class App extends Component {
     event.preventDefault();
     this.setState({ loading: true });
     const body = { index: eventKey };
-    fetch('/api/format', {
+    fetch('/api/fix', {
       method: 'POST',
       body: JSON.stringify(body),
       headers: {
@@ -391,7 +391,7 @@ class App extends Component {
               Home
             </Button>
             <Dropdown onSelect={this.handleChangeDir}>
-              <Dropdown.Toggle style={{width: "75px"}} variant="warning" id="dropdown-basic">
+              <Dropdown.Toggle style={{width: "75px"}} variant="warning" id="dropdown-changedir">
                 Dirs
               </Dropdown.Toggle>
               <Dropdown.Menu>
@@ -418,7 +418,7 @@ class App extends Component {
               Cancel
             </Button>
             <Dropdown onSelect={this.handleSystem}>
-              <Dropdown.Toggle style={{width: "100px"}} variant="dark" id="dropdown-basic">
+              <Dropdown.Toggle style={{width: "100px"}} variant="dark" id="dropdown-system">
                 System
               </Dropdown.Toggle>
               <Dropdown.Menu>
@@ -427,11 +427,13 @@ class App extends Component {
                 <Dropdown.Item hidden={fileSystem === 'ro'} eventKey="lock">Lock filesystem (ro)</Dropdown.Item>
                 <Dropdown.Item hidden={fileSystem === 'rw'} eventKey="unlock">Unlock filesystem (rw)</Dropdown.Item>
                 <Dropdown.Divider />
-                <Dropdown.Item eventKey="logout">Logout (turn off web and WiFi)</Dropdown.Item>
+                <Dropdown.Item eventKey="exit">Exit</Dropdown.Item>
+                <Dropdown.Item eventKey="reboot">Reboot</Dropdown.Item>
+                <Dropdown.Item eventKey="shutdown">Shutdown</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
             <Dropdown onSelect={this.handleFix}>
-              <Dropdown.Toggle style={{width: "60px"}} variant="info" id="dropdown-basic">
+              <Dropdown.Toggle style={{width: "60px"}} variant="info" id="dropdown-fix">
                 Fix
               </Dropdown.Toggle>
               <Dropdown.Menu>

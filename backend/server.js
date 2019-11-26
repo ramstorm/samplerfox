@@ -58,6 +58,10 @@ execute = (command, res) => {
   });
 }
 
+lock = () => {
+  proc.execSync('sudo mount -o remount,ro / ; sudo mount -o remount,ro /boot');
+}
+
 router.get('/data', (req, res) => {
   let files = {};
   list().forEach(file => {
@@ -90,7 +94,7 @@ router.post('/rename', (req, res) => {
   res.json({ success: true });
 });
 
-router.post('/format', (req, res) => {
+router.post('/fix', (req, res) => {
   const indexRegex = /^[0-9]+_(.+)/;
   const volumeRegex = /_[0-9]+(d[0-9]+|$)/;
   const files = list();
@@ -186,15 +190,31 @@ router.post('/unlock', (req, res) => {
 });
 
 router.post('/start', (req, res) => {
-  execute('/home/pi/startm.sh &', res);
+  execute('sudo /home/pi/startm.sh &', res);
 });
 
 router.post('/stop', (req, res) => {
   execute('ps aux | grep -v grep | grep \'startm\\|samplerbox\' | awk \'{ print $2 }\' | xargs sudo kill ; aconnect -x', res);
 });
 
-router.post('/logout', (req, res) => {
+router.post('/exit', (req, res) => {
+  lock();
+  proc.execSync('sudo systemctl stop samplerfox-be');
+  proc.execSync('sudo /etc/init.d/nginx stop');
+  proc.execSync('sudo rfkill block wifi');
   process.exit(0);
+});
+
+router.post('/reboot', (req, res) => {
+  lock();
+  proc.exec('sudo reboot', (error, stdout, stderr) => {});
+  res.json({ success: true });
+});
+
+router.post('/shutdown', (req, res) => {
+  lock();
+  proc.exec('sudo halt', (error, stdout, stderr) => {});
+  res.json({ success: true });
 });
 
 router.get('/system', (req, res) => {
@@ -207,10 +227,6 @@ router.get('/system', (req, res) => {
     freeSpace: df.toString(),
     sampler: ps.toString().trim() ? 'on' : 'off'
   });
-});
-
-router.get('/kill', (req, res) => {
-  process.exit(0);
 });
 
 app.use('/api', router);

@@ -13,7 +13,7 @@ const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'bas
 const ROOT_DIR = '/home/pi/sounds';
 const NEW_DIR_NAME = 'newdir';
 const SOUND_FILE_EXTENSION = '.wav';
-const START_CMD = 'sudo /home/pi/startm.sh > /dev/null 2>&1 &';
+const START_CMD = 'sudo systemctl start samplerbox-starter';
 const STOP_CMD = 'ps aux | grep -v grep | grep \'startm\\|samplerbox\' | awk \'{ print $2 }\' | xargs sudo kill ; sudo aconnect -x';
 const API_PORT = 3001;
 

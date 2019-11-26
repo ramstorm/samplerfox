@@ -186,6 +186,11 @@ router.post('/unlock', (req, res) => {
   });
 });
 
+router.get('/system', (req, res) => {
+  const mount = proc.execSync('mount | grep "/dev/.* on / " | sed "s/.*\\(r[w|o]\\).*/\\1/g"');
+  res.json({ success: true, data: mount.toString().trim() });
+});
+
 router.get('/kill', (req, res) => {
   process.exit(0);
 });

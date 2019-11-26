@@ -49,8 +49,18 @@ remove = (file) => {
   }
 }
 
+execute = (command, res) => {
+  proc.exec(command, (error, stdout, stderr) => {
+    if (error) {
+      res.status(500).json({ error: error });
+    }
+    res.json({ success: true });
+  });
+}
+
 lock = () => {
-  proc.execSync('sudo mount -o remount,ro / ; sudo mount -o remount,ro /boot');
+  proc.execSync('sudo mount -o remount,ro / || true');
+  proc.execSync('sudo mount -o remount,ro /boot || true');
 }
 
 router.get('/data', (req, res) => {
@@ -173,31 +183,26 @@ router.post('/mkdir', (req, res) => {
 });
 
 router.post('/lock', (req, res) => {
-  lock();
-  res.json({ success: true });
+  execute('sudo mount -o remount,ro / ; sudo mount -o remount,ro /boot', res);
 });
 
 router.post('/unlock', (req, res) => {
-  proc.execSync('sudo mount -o remount,rw / ; sudo mount -o remount,rw /boot');
-  res.json({ success: true });
+  execute('sudo mount -o remount,rw / ; sudo mount -o remount,rw /boot', res);
 });
 
 router.post('/start', (req, res) => {
-  proc.execSync('sudo /home/pi/startm.sh > /dev/null 2>&1 &');
-  res.json({ success: true });
+  execute('sudo /home/pi/startm.sh > /dev/null 2>&1 &', res);
 });
 
 router.post('/stop', (req, res) => {
-  proc.execSync('ps aux | grep -v grep | grep \'startm\\|samplerbox\' | awk \'{ print $2 }\' | xargs sudo kill ; sudo aconnect -x');
-  res.json({ success: true });
+  execute('ps aux | grep -v grep | grep \'startm\\|samplerbox\' | awk \'{ print $2 }\' | xargs sudo kill ; sudo aconnect -x', res);
 });
 
 router.post('/exit', (req, res) => {
   lock();
-  proc.execSync('sudo /etc/init.d/nginx stop');
-  proc.execSync('sudo rfkill block wifi');
-  proc.exec('sudo systemctl stop samplerfox-be');
-  res.json({ success: true });
+  proc.execSync('sudo /etc/init.d/nginx stop || true');
+  proc.execSync('sudo rfkill block wifi || true');
+  execute('sudo systemctl stop samplerfox-be', res);
 });
 
 router.post('/reboot', (req, res) => {
@@ -209,13 +214,13 @@ router.post('/reboot', (req, res) => {
 router.post('/shutdown', (req, res) => {
   lock();
   proc.exec('sudo halt');
-  res.json({ success: true });
+  res.status(404).json({ error: 'shutdown' });
 });
 
 router.get('/system', (req, res) => {
-  const ps = proc.execSync('ps aux | grep -v grep | grep samplerbox');
-  const fs = proc.execSync('sudo mount | grep "/dev/.* on / " | sed "s/.*\\(r[w|o]\\).*/\\1/g"');
-  const df = proc.execSync('df -h | grep "/dev/root" | awk \'{ print $4 }\'');
+  const ps = proc.execSync('ps aux | grep -v grep | grep samplerbox || true');
+  const fs = proc.execSync('sudo mount | grep "/dev/.* on / " | sed "s/.*\\(r[w|o]\\).*/\\1/g" || true');
+  const df = proc.execSync('df -h | grep "/dev/root" | awk \'{ print $4 }\' || true');
   res.json({
     success: true,
     fileSystem: fs.toString().trim(),

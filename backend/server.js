@@ -101,6 +101,7 @@ router.post('/rename', (req, res) => {
 router.post('/fix', (req, res) => {
   const indexRegex = /^[0-9]+_(.+)/;
   const volumeRegex = /_[0-9]+(d[0-9]+|$)/;
+  const doubleNoteRegex = /d[0-9]+$/;
   const files = list();
   let i = Number(req.body.index);
   files.forEach(file => {
@@ -117,7 +118,11 @@ router.post('/fix', (req, res) => {
     if (!volumeRegex.test(name)) {
       volume = '_100';
     }
-    const newName = i + '_' + name + volume + extension.toLowerCase();
+    let doubleNote = '';
+    if (!doubleNoteRegex.test(name)) {
+      doubleNote = 'd0';
+    }
+    const newName = i + '_' + name + volume + doubleNote + extension.toLowerCase();
     if (file !== newName) {
       rename(file, newName);
     }
